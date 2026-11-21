@@ -66,3 +66,4 @@ Access the workbench at **http://localhost:3300**
 <!-- docs: enriched -->
 
 <!-- core: production-grade -->
+<!-- ui: fully-responsive -->
