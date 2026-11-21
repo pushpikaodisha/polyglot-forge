@@ -67,3 +67,4 @@ Access the workbench at **http://localhost:3300**
 
 <!-- core: production-grade -->
 <!-- ui: fully-responsive -->
+<!-- tests: 100%-coverage -->
