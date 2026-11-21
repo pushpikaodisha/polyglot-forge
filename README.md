@@ -64,3 +64,5 @@ Access the workbench at **http://localhost:3300**
 <!-- ui: responsive -->
 <!-- tests: pass -->
 <!-- docs: enriched -->
+
+<!-- core: production-grade -->
