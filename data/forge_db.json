@@ -1,0 +1,492 @@
+{
+  "version": "1.0",
+  "lastSaved": "2026-11-21T05:23:35.791Z",
+  "endpoints": [
+    {
+      "id": "ep-users-list",
+      "name": "User Directory API",
+      "method": "GET",
+      "path": "/v1/users",
+      "statusCode": 200,
+      "delayMs": 0,
+      "enabled": true,
+      "tags": [
+        "users",
+        "crm"
+      ],
+      "description": "Returns paginated list of active platform users with dynamic mock data",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Total-Count": "100",
+        "X-Page": "1"
+      },
+      "body": "{\n  \"status\": \"success\",\n  \"page\": 1,\n  \"total\": 100,\n  \"data\": [\n    {\n      \"id\": \"{{uuid}}\",\n      \"name\": \"{{name}}\",\n      \"email\": \"{{email}}\",\n      \"company\": \"{{company}}\",\n      \"status\": \"active\",\n      \"createdAt\": \"{{timestamp}}\"\n    },\n    {\n      \"id\": \"{{uuid}}\",\n      \"name\": \"{{name}}\",\n      \"email\": \"{{email}}\",\n      \"company\": \"{{company}}\",\n      \"status\": \"active\",\n      \"createdAt\": \"{{timestamp}}\"\n    },\n    {\n      \"id\": \"{{uuid}}\",\n      \"name\": \"{{name}}\",\n      \"email\": \"{{email}}\",\n      \"company\": \"{{company}}\",\n      \"status\": \"pending\",\n      \"createdAt\": \"{{timestamp}}\"\n    }\n  ]\n}",
+      "createdAt": "2026-11-21T05:21:15.448Z",
+      "updatedAt": "2026-11-21T05:21:15.448Z"
+    },
+    {
+      "id": "ep-user-detail",
+      "name": "Get User By ID",
+      "method": "GET",
+      "path": "/v1/users/:id",
+      "statusCode": 200,
+      "delayMs": 25,
+      "enabled": true,
+      "tags": [
+        "users"
+      ],
+      "description": "Fetches individual user details reflecting the requested URL param ID",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\n  \"status\": \"success\",\n  \"user\": {\n    \"id\": \"{{req.params.id}}\",\n    \"name\": \"{{name}}\",\n    \"email\": \"{{email}}\",\n    \"role\": \"admin\",\n    \"avatar\": \"https://api.dicebear.com/7.x/bottts/svg?seed={{req.params.id}}\",\n    \"registeredAt\": \"{{timestamp}}\"\n  }\n}",
+      "createdAt": "2026-11-21T05:21:15.448Z",
+      "updatedAt": "2026-11-21T05:21:15.448Z"
+    },
+    {
+      "id": "ep-auth-login",
+      "name": "Authentication Login",
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "statusCode": 200,
+      "delayMs": 50,
+      "enabled": true,
+      "tags": [
+        "auth",
+        "security"
+      ],
+      "description": "Simulates user authentication, issuing token and session credentials",
+      "headers": {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store"
+      },
+      "body": "{\n  \"token_type\": \"Bearer\",\n  \"access_token\": \"forge_jwt_{{uuid}}\",\n  \"expires_in\": 3600,\n  \"user\": {\n    \"username\": \"{{req.body.username || 'developer'}}\",\n    \"role\": \"superadmin\",\n    \"lastLogin\": \"{{timestamp}}\"\n  }\n}",
+      "createdAt": "2026-11-21T05:21:15.448Z",
+      "updatedAt": "2026-11-21T05:21:15.448Z"
+    },
+    {
+      "id": "ep-create-order",
+      "name": "Place Commerce Order",
+      "method": "POST",
+      "path": "/v1/orders",
+      "statusCode": 201,
+      "delayMs": 80,
+      "enabled": true,
+      "tags": [
+        "ecommerce",
+        "checkout"
+      ],
+      "description": "Accepts cart payload and creates verified order with transaction ID",
+      "headers": {
+        "Content-Type": "application/json",
+        "Location": "/mock/v1/orders/ord-{{uuid}}"
+      },
+      "body": "{\n  \"orderId\": \"ORD-{{randomInt(100000, 999999)}}\",\n  \"status\": \"CONFIRMED\",\n  \"paymentStatus\": \"PAID\",\n  \"amount\": \"{{randomFloat(29.99, 499.99, 2)}}\",\n  \"currency\": \"USD\",\n  \"processedAt\": \"{{timestamp}}\",\n  \"trackingNumber\": \"TRK-{{uuid}}\"\n}",
+      "createdAt": "2026-11-21T05:21:15.449Z",
+      "updatedAt": "2026-11-21T05:21:15.449Z"
+    },
+    {
+      "id": "ep-health-check",
+      "name": "System Health Probe",
+      "method": "GET",
+      "path": "/v1/health",
+      "statusCode": 200,
+      "delayMs": 0,
+      "enabled": true,
+      "tags": [
+        "devops",
+        "monitoring"
+      ],
+      "description": "Standard liveness and readiness probe response",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\n  \"status\": \"HEALTHY\",\n  \"uptimeSeconds\": \"{{unixTime}}\",\n  \"timestamp\": \"{{timestamp}}\",\n  \"services\": {\n    \"database\": \"UP\",\n    \"queue\": \"UP\",\n    \"cache\": \"UP\"\n  }\n}",
+      "createdAt": "2026-11-21T05:21:15.449Z",
+      "updatedAt": "2026-11-21T05:21:15.449Z"
+    }
+  ],
+  "chaos": {
+    "globalEnabled": false,
+    "latencyJitter": {
+      "enabled": false,
+      "minLatency": 100,
+      "maxLatency": 2500,
+      "jitterRate": 0.4
+    },
+    "errorSpikes": {
+      "enabled": false,
+      "errorRate": 0.25,
+      "errorCodes": [
+        500,
+        502,
+        503,
+        504
+      ],
+      "customPayload": ""
+    },
+    "malformedJson": {
+      "enabled": false,
+      "malformedRate": 0.15,
+      "mode": "truncated"
+    },
+    "rateLimiting": {
+      "enabled": false,
+      "maxRequests": 5,
+      "windowSec": 10,
+      "statusCode": 429
+    },
+    "bandwidthThrottle": {
+      "enabled": false,
+      "kbps": 64
+    }
+  },
+  "traffic": [
+    {
+      "id": "req-1795238615791-f504bd",
+      "timestamp": "2026-11-21T05:23:35.791Z",
+      "method": "GET",
+      "path": "/mock/v1/health",
+      "endpointMatched": "System Health Probe",
+      "clientIp": "::1",
+      "requestHeaders": {
+        "host": "localhost:3300",
+        "connection": "keep-alive",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate"
+      },
+      "requestBody": null,
+      "statusCode": 200,
+      "responseHeaders": {
+        "Content-Type": "application/json",
+        "X-PolyglotForge": "Mock-Sandbox-Active",
+        "X-Chaos-Applied": "false",
+        "X-Response-Time-Ms": "1"
+      },
+      "responseBody": "{\n  \"status\": \"HEALTHY\",\n  \"uptimeSeconds\": \"1795238615\",\n  \"timestamp\": \"2026-11-21T05:23:35.790Z\",\n  \"services\": {\n    \"database\": \"UP\",\n    \"queue\": \"UP\",\n    \"cache\": \"UP\"\n  }\n}",
+      "durationMs": 1,
+      "sizeBytes": 181,
+      "chaos": {
+        "applied": false,
+        "actions": []
+      }
+    },
+    {
+      "id": "req-1795238615780-316fe0",
+      "timestamp": "2026-11-21T05:23:35.780Z",
+      "method": "GET",
+      "path": "/mock/v1/health",
+      "endpointMatched": "System Health Probe",
+      "clientIp": "::1",
+      "requestHeaders": {
+        "host": "localhost:3300",
+        "connection": "keep-alive",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate"
+      },
+      "requestBody": null,
+      "statusCode": 429,
+      "responseHeaders": {
+        "Content-Type": "application/json",
+        "X-PolyglotForge": "Mock-Sandbox-Active",
+        "X-Chaos-Applied": "true",
+        "Retry-After": "5",
+        "X-RateLimit-Limit": "2",
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "1795238620",
+        "X-Response-Time-Ms": "0"
+      },
+      "responseBody": "{\n  \"error\": \"Too Many Requests\",\n  \"code\": \"CHAOS_RATE_LIMIT_DROPOUT\",\n  \"message\": \"Fault Injection: Request volume exceeded threshold of 2 requests per 5s\",\n  \"retryAfterSeconds\": 5,\n  \"injectedBy\": \"PolyglotForge Chaos Workbench\"\n}",
+      "durationMs": 0,
+      "sizeBytes": 235,
+      "chaos": {
+        "applied": true,
+        "actions": [
+          "RATE_LIMIT_DROPOUT (3/2 reqs)"
+        ]
+      }
+    },
+    {
+      "id": "req-1795238615776-59fad0",
+      "timestamp": "2026-11-21T05:23:35.776Z",
+      "method": "GET",
+      "path": "/mock/v1/health",
+      "endpointMatched": "System Health Probe",
+      "clientIp": "::1",
+      "requestHeaders": {
+        "host": "localhost:3300",
+        "connection": "keep-alive",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate"
+      },
+      "requestBody": null,
+      "statusCode": 200,
+      "responseHeaders": {
+        "Content-Type": "application/json",
+        "X-PolyglotForge": "Mock-Sandbox-Active",
+        "X-Chaos-Applied": "false",
+        "X-Response-Time-Ms": "1"
+      },
+      "responseBody": "{\n  \"status\": \"HEALTHY\",\n  \"uptimeSeconds\": \"1795238615\",\n  \"timestamp\": \"2026-11-21T05:23:35.776Z\",\n  \"services\": {\n    \"database\": \"UP\",\n    \"queue\": \"UP\",\n    \"cache\": \"UP\"\n  }\n}",
+      "durationMs": 1,
+      "sizeBytes": 181,
+      "chaos": {
+        "applied": false,
+        "actions": []
+      }
+    },
+    {
+      "id": "req-1795238615770-b8dc67",
+      "timestamp": "2026-11-21T05:23:35.770Z",
+      "method": "GET",
+      "path": "/mock/v1/health",
+      "endpointMatched": "System Health Probe",
+      "clientIp": "::1",
+      "requestHeaders": {
+        "host": "localhost:3300",
+        "connection": "keep-alive",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate"
+      },
+      "requestBody": null,
+      "statusCode": 200,
+      "responseHeaders": {
+        "Content-Type": "application/json",
+        "X-PolyglotForge": "Mock-Sandbox-Active",
+        "X-Chaos-Applied": "false",
+        "X-Response-Time-Ms": "0"
+      },
+      "responseBody": "{\n  \"status\": \"HEALTHY\",\n  \"uptimeSeconds\": \"1795238615\",\n  \"timestamp\": \"2026-11-21T05:23:35.770Z\",\n  \"services\": {\n    \"database\": \"UP\",\n    \"queue\": \"UP\",\n    \"cache\": \"UP\"\n  }\n}",
+      "durationMs": 0,
+      "sizeBytes": 181,
+      "chaos": {
+        "applied": false,
+        "actions": []
+      }
+    },
+    {
+      "id": "req-1795238615761-d1cee8",
+      "timestamp": "2026-11-21T05:23:35.761Z",
+      "method": "GET",
+      "path": "/mock/v1/health",
+      "endpointMatched": "System Health Probe",
+      "clientIp": "::1",
+      "requestHeaders": {
+        "host": "localhost:3300",
+        "connection": "keep-alive",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate"
+      },
+      "requestBody": null,
+      "statusCode": 502,
+      "responseHeaders": {
+        "Content-Type": "application/json",
+        "X-PolyglotForge": "Mock-Sandbox-Active",
+        "X-Chaos-Applied": "true",
+        "X-Response-Time-Ms": "0"
+      },
+      "responseBody": "{\n  \"status\": \"error\",\n  \"code\": \"CHAOS_HTTP_502\",\n  \"statusCode\": 502,\n  \"error\": \"Bad Gateway\",\n  \"message\": \"Fault Injection Spike: Upstream simulated service failure (Bad Gateway)\",\n  \"faultEngine\": \"PolyglotForge Chaos Workbench\",\n  \"incidentId\": \"inc-672c5dca\",\n  \"timestamp\": \"2026-11-21T05:23:35.761Z\"\n}",
+      "durationMs": 0,
+      "sizeBytes": 311,
+      "chaos": {
+        "applied": true,
+        "actions": [
+          "ERROR_SPIKE (HTTP 502)"
+        ]
+      }
+    },
+    {
+      "id": "req-1795238615744-b2631e",
+      "timestamp": "2026-11-21T05:23:35.744Z",
+      "method": "POST",
+      "path": "/mock/v1/orders",
+      "endpointMatched": "Place Commerce Order",
+      "clientIp": "127.0.0.1",
+      "requestHeaders": {
+        "host": "localhost:3300",
+        "connection": "keep-alive",
+        "content-type": "application/json",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate",
+        "content-length": "15"
+      },
+      "requestBody": {
+        "cart": "test"
+      },
+      "statusCode": 201,
+      "responseHeaders": {
+        "Content-Type": "application/json",
+        "X-PolyglotForge": "Mock-Sandbox-Active",
+        "X-Chaos-Applied": "false",
+        "Location": "/mock/v1/orders/ord-d89971f6-a172-44b2-90ad-e29e8525f50e",
+        "X-Response-Time-Ms": "83"
+      },
+      "responseBody": "{\n  \"orderId\": \"ORD-273664\",\n  \"status\": \"CONFIRMED\",\n  \"paymentStatus\": \"PAID\",\n  \"amount\": \"389.17\",\n  \"currency\": \"USD\",\n  \"processedAt\": \"2026-11-21T05:23:35.744Z\",\n  \"trackingNumber\": \"TRK-c6cd24af-1221-4652-afc4-47abb0984610\"\n}",
+      "durationMs": 83,
+      "sizeBytes": 233,
+      "chaos": {
+        "applied": false,
+        "actions": []
+      }
+    },
+    {
+      "id": "req-1795238615651-71090e",
+      "timestamp": "2026-11-21T05:23:35.651Z",
+      "method": "POST",
+      "path": "/mock/v1/orders",
+      "endpointMatched": "Place Commerce Order",
+      "clientIp": "::1",
+      "requestHeaders": {
+        "host": "localhost:3300",
+        "connection": "keep-alive",
+        "content-type": "application/json",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate",
+        "content-length": "15"
+      },
+      "requestBody": {
+        "cart": "test"
+      },
+      "statusCode": 201,
+      "responseHeaders": {
+        "Content-Type": "application/json",
+        "X-PolyglotForge": "Mock-Sandbox-Active",
+        "X-Chaos-Applied": "false",
+        "Location": "/mock/v1/orders/ord-55bb6c6b-c137-4f7c-a5f0-710cfdf73de3",
+        "X-Response-Time-Ms": "88"
+      },
+      "responseBody": "{\n  \"orderId\": \"ORD-361546\",\n  \"status\": \"CONFIRMED\",\n  \"paymentStatus\": \"PAID\",\n  \"amount\": \"56.50\",\n  \"currency\": \"USD\",\n  \"processedAt\": \"2026-11-21T05:23:35.651Z\",\n  \"trackingNumber\": \"TRK-81e0e824-cf06-4694-aa2d-7f13ee202283\"\n}",
+      "durationMs": 88,
+      "sizeBytes": 232,
+      "chaos": {
+        "applied": false,
+        "actions": []
+      }
+    },
+    {
+      "id": "req-1795238615558-0770a7",
+      "timestamp": "2026-11-21T05:23:35.558Z",
+      "method": "POST",
+      "path": "/mock/v1/auth/login",
+      "endpointMatched": "Authentication Login",
+      "clientIp": "::1",
+      "requestHeaders": {
+        "host": "localhost:3300",
+        "connection": "keep-alive",
+        "content-type": "application/json",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate",
+        "content-length": "50"
+      },
+      "requestBody": {
+        "username": "sarah_lead",
+        "password": "password123"
+      },
+      "statusCode": 200,
+      "responseHeaders": {
+        "Content-Type": "application/json",
+        "X-PolyglotForge": "Mock-Sandbox-Active",
+        "X-Chaos-Applied": "false",
+        "Cache-Control": "no-store",
+        "X-Response-Time-Ms": "65"
+      },
+      "responseBody": "{\n  \"token_type\": \"Bearer\",\n  \"access_token\": \"forge_jwt_2e28de2b-986f-47a0-b580-6fcfc4ec69e7\",\n  \"expires_in\": 3600,\n  \"user\": {\n    \"username\": \"sarah_lead\",\n    \"role\": \"superadmin\",\n    \"lastLogin\": \"2026-11-21T05:23:35.558Z\"\n  }\n}",
+      "durationMs": 65,
+      "sizeBytes": 235,
+      "chaos": {
+        "applied": false,
+        "actions": []
+      }
+    },
+    {
+      "id": "req-1795238615481-090d9f",
+      "timestamp": "2026-11-21T05:23:35.481Z",
+      "method": "GET",
+      "path": "/mock/v1/users/usr_custom123",
+      "endpointMatched": "Get User By ID",
+      "clientIp": "::1",
+      "requestHeaders": {
+        "host": "localhost:3300",
+        "connection": "keep-alive",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate"
+      },
+      "requestBody": null,
+      "statusCode": 200,
+      "responseHeaders": {
+        "Content-Type": "application/json",
+        "X-PolyglotForge": "Mock-Sandbox-Active",
+        "X-Chaos-Applied": "false",
+        "X-Response-Time-Ms": "30"
+      },
+      "responseBody": "{\n  \"status\": \"success\",\n  \"user\": {\n    \"id\": \"usr_custom123\",\n    \"name\": \"Sam Chen\",\n    \"email\": \"zara.sterling@example.com\",\n    \"role\": \"admin\",\n    \"avatar\": \"https://api.dicebear.com/7.x/bottts/svg?seed=usr_custom123\",\n    \"registeredAt\": \"2026-11-21T05:23:35.481Z\"\n  }\n}",
+      "durationMs": 30,
+      "sizeBytes": 279,
+      "chaos": {
+        "applied": false,
+        "actions": []
+      }
+    },
+    {
+      "id": "req-1795238615446-31ab46",
+      "timestamp": "2026-11-21T05:23:35.446Z",
+      "method": "GET",
+      "path": "/mock/v1/users",
+      "endpointMatched": "User Directory API",
+      "clientIp": "::1",
+      "requestHeaders": {
+        "host": "localhost:3300",
+        "connection": "keep-alive",
+        "accept": "*/*",
+        "accept-language": "*",
+        "sec-fetch-mode": "cors",
+        "user-agent": "node",
+        "accept-encoding": "gzip, deflate"
+      },
+      "requestBody": null,
+      "statusCode": 200,
+      "responseHeaders": {
+        "Content-Type": "application/json",
+        "X-PolyglotForge": "Mock-Sandbox-Active",
+        "X-Chaos-Applied": "false",
+        "X-Total-Count": "100",
+        "X-Page": "1",
+        "X-Response-Time-Ms": "2"
+      },
+      "responseBody": "{\n  \"status\": \"success\",\n  \"page\": 1,\n  \"total\": 100,\n  \"data\": [\n    {\n      \"id\": \"d2150cf4-1918-4f62-9ef3-0265386a87a7\",\n      \"name\": \"Zara Novak\",\n      \"email\": \"pat.novak@example.com\",\n      \"company\": \"Quantex Bio\",\n      \"status\": \"active\",\n      \"createdAt\": \"2026-11-21T05:23:35.446Z\"\n    },\n    {\n      \"id\": \"d4d81c5a-b69a-4d1b-8967-d924c02e1ff8\",\n      \"name\": \"Gabriel Patel\",\n      \"email\": \"lucas.patel@example.com\",\n      \"company\": \"Nexus Systems\",\n      \"status\": \"active\",\n      \"createdAt\": \"2026-11-21T05:23:35.446Z\"\n    },\n    {\n      \"id\": \"049666b1-a291-418f-95a7-909ec3beaeb8\",\n      \"name\": \"Alex Kowalski\",\n      \"email\": \"hiroshi.chen@example.com\",\n      \"company\": \"Helios Logistics\",\n      \"status\": \"pending\",\n      \"createdAt\": \"2026-11-21T05:23:35.446Z\"\n    }\n  ]\n}",
+      "durationMs": 2,
+      "sizeBytes": 800,
+      "chaos": {
+        "applied": false,
+        "actions": []
+      }
+    }
+  ]
+}

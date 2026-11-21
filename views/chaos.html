@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chaos Matrix - PolyglotForge</title>
+  <link rel="stylesheet" href="/css/forge.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo-group">
+        <div class="logo-badge">⚡</div>
+        <div class="logo-text">Polyglot<span>Forge</span></div>
+      </a>
+
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle Navigation">☰</button>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/" class="nav-link">Dashboard</a></li>
+        <li><a href="/endpoints" class="nav-link">Endpoint Designer</a></li>
+        <li><a href="/chaos" class="nav-link active">Chaos Matrix</a></li>
+        <li><a href="/traffic" class="nav-link">Traffic Inspector</a></li>
+      </ul>
+
+      <div class="nav-status-group">
+        <div class="live-indicator" id="liveIndicator">
+          <span class="live-dot"></span>
+          <span id="liveText">LIVE FEED</span>
+        </div>
+
+        <div class="chaos-master-toggle" id="masterChaosToggle" title="Toggle Global Chaos Fault Injection">
+          <span class="dot"></span>
+          <span class="text">CHAOS: SAFE</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">Interactive <span class="accent" style="color: var(--neon-red);">Chaos Matrix</span></h1>
+        <p class="page-subtitle">Inject real-time faults, jitter, packet corruption, and rate limit dropouts into all sandbox APIs</p>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary" onclick="disarmAllChaos()">
+          🛡️ Disarm &amp; Reset Safe
+        </button>
+        <button class="btn btn-primary" id="saveChaosBtn" onclick="saveChaosConfiguration()">
+          💾 Save Chaos Matrix
+        </button>
+      </div>
+    </header>
+
+    <!-- Chaos Presets Bar -->
+    <div class="card p-4" style="margin-bottom: 2rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <span style="font-size: 0.85rem; font-weight: 700; color: #fff; text-transform: uppercase; font-family: var(--font-mono);">
+            ⚡ Rapid Fault Scenarios:
+          </span>
+          <span style="font-size: 0.8rem; color: var(--text-dim); margin-left: 0.5rem;">Load pre-configured chaos profiles</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="applyPreset('safe')">🛡️ Safe (All Off)</button>
+          <button class="btn btn-secondary btn-sm" onclick="applyPreset('flaky3g')">📶 Flaky 3G Mobile</button>
+          <button class="btn btn-secondary btn-sm" onclick="applyPreset('outage')">💥 Upstream Outage</button>
+          <button class="btn btn-secondary btn-sm" onclick="applyPreset('ddos')">🚦 Rate Limit Spike</button>
+          <button class="btn btn-secondary btn-sm" onclick="applyPreset('storm')">🌪️ Full Chaos Storm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chaos Fault Cards Grid -->
+    <div class="chaos-grid">
+      <!-- 1. Latency Jitter -->
+      <div class="chaos-card" id="cardLatency">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.5rem;">⏳</span>
+            <div>
+              <div style="font-weight: 700; color: #fff;">Latency Jitter &amp; Lag</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Simulate slow network or overloaded server</div>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chaosLatencyEnabled">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+
+        <div class="form-group slider-container">
+          <div class="slider-header">
+            <span class="form-label" style="margin: 0;">Jitter Trigger Probability</span>
+            <span class="slider-value" id="valJitterRate">40%</span>
+          </div>
+          <input type="range" class="chaos-slider" id="inputJitterRate" min="0" max="100" value="40">
+        </div>
+
+        <div class="form-group slider-container">
+          <div class="slider-header">
+            <span class="form-label" style="margin: 0;">Minimum Latency</span>
+            <span class="slider-value" id="valMinLatency">100ms</span>
+          </div>
+          <input type="range" class="chaos-slider" id="inputMinLatency" min="50" max="2000" step="50" value="100">
+        </div>
+
+        <div class="form-group slider-container">
+          <div class="slider-header">
+            <span class="form-label" style="margin: 0;">Maximum Latency</span>
+            <span class="slider-value" id="valMaxLatency">2500ms</span>
+          </div>
+          <input type="range" class="chaos-slider" id="inputMaxLatency" min="500" max="6000" step="100" value="2500">
+        </div>
+      </div>
+
+      <!-- 2. Error Spike Generator -->
+      <div class="chaos-card" id="cardError">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.5rem;">💥</span>
+            <div>
+              <div style="font-weight: 700; color: #fff;">Error Spikes (50x)</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Random HTTP failures and service errors</div>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chaosErrorEnabled">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+
+        <div class="form-group slider-container">
+          <div class="slider-header">
+            <span class="form-label" style="margin: 0;">Error Spike Rate</span>
+            <span class="slider-value" id="valErrorRate" style="color: var(--neon-red);">25%</span>
+          </div>
+          <input type="range" class="chaos-slider danger" id="inputErrorRate" min="0" max="100" value="25">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Injected Error Codes</label>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-family: var(--font-mono); color: #fff;">
+              <input type="checkbox" id="err500" checked> 500
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-family: var(--font-mono); color: #fff;">
+              <input type="checkbox" id="err502" checked> 502
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-family: var(--font-mono); color: #fff;">
+              <input type="checkbox" id="err503" checked> 503
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-family: var(--font-mono); color: #fff;">
+              <input type="checkbox" id="err504" checked> 504
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Custom Error Body (Optional JSON, blank for default)</label>
+          <textarea id="customErrorPayload" class="form-control" rows="2" placeholder='{"error": "Custom Chaos Downstream Failure"}'></textarea>
+        </div>
+      </div>
+
+      <!-- 3. Malformed JSON -->
+      <div class="chaos-card" id="cardMalformed">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.5rem;">☣️</span>
+            <div>
+              <div style="font-weight: 700; color: #fff;">Malformed JSON Payloads</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Corrupt payload syntax to test parser resiliency</div>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chaosMalformedEnabled">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+
+        <div class="form-group slider-container">
+          <div class="slider-header">
+            <span class="form-label" style="margin: 0;">Corruption Probability</span>
+            <span class="slider-value" id="valMalformedRate" style="color: var(--neon-amber);">15%</span>
+          </div>
+          <input type="range" class="chaos-slider" id="inputMalformedRate" min="0" max="100" value="15">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mutation Mode</label>
+          <select id="malformedMode" class="form-control">
+            <option value="truncated">Truncated Stream (Abrupt Cutoff)</option>
+            <option value="unexpected_char">Syntax Injection (Unexpected tokens)</option>
+            <option value="null_mutation">Null Key Mappings</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 4. Rate Limiting -->
+      <div class="chaos-card" id="cardRateLimit">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.5rem;">🚦</span>
+            <div>
+              <div style="font-weight: 700; color: #fff;">Rate Limiting Dropouts (429)</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Threshold burst dropouts with Retry-After</div>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chaosRateLimitEnabled">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+
+        <div class="form-group slider-container">
+          <div class="slider-header">
+            <span class="form-label" style="margin: 0;">Max Requests Per Window</span>
+            <span class="slider-value" id="valMaxRequests">5 reqs</span>
+          </div>
+          <input type="range" class="chaos-slider" id="inputMaxRequests" min="1" max="50" value="5">
+        </div>
+
+        <div class="form-group slider-container">
+          <div class="slider-header">
+            <span class="form-label" style="margin: 0;">Window Duration</span>
+            <span class="slider-value" id="valWindowSec">10 sec</span>
+          </div>
+          <input type="range" class="chaos-slider" id="inputWindowSec" min="2" max="60" value="10">
+        </div>
+      </div>
+
+      <!-- 5. Bandwidth Throttling -->
+      <div class="chaos-card" id="cardThrottle">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.5rem;">🐌</span>
+            <div>
+              <div style="font-weight: 700; color: #fff;">Bandwidth Throttling</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Simulate low-bandwidth networks (chunked delay)</div>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="chaosThrottleEnabled">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+
+        <div class="form-group slider-container">
+          <div class="slider-header">
+            <span class="form-label" style="margin: 0;">Maximum Throughput</span>
+            <span class="slider-value" id="valThrottleKbps">64 kbps</span>
+          </div>
+          <input type="range" class="chaos-slider" id="inputThrottleKbps" min="16" max="512" step="16" value="64">
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 1rem;">
+          Simulates mobile 2G/3G network conditions by pacing response buffers in small chunks.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/js/forge-app.js"></script>
+  <script>
+    let chaosState = null;
+
+    async function loadChaosConfig() {
+      try {
+        const res = await fetch('/api/chaos');
+        const data = await res.json();
+        if (data.success) {
+          chaosState = data.data;
+          renderChaosUI();
+        }
+      } catch (err) {
+        ForgeApp.showToast('Failed to load chaos settings', 'error');
+      }
+    }
+
+    function renderChaosUI() {
+      if (!chaosState) return;
+
+      // Latency
+      document.getElementById('chaosLatencyEnabled').checked = !!chaosState.latencyJitter?.enabled;
+      document.getElementById('inputJitterRate').value = Math.round((chaosState.latencyJitter?.jitterRate || 0.4) * 100);
+      document.getElementById('valJitterRate').textContent = `${Math.round((chaosState.latencyJitter?.jitterRate || 0.4) * 100)}%`;
+      document.getElementById('inputMinLatency').value = chaosState.latencyJitter?.minLatency || 100;
+      document.getElementById('valMinLatency').textContent = `${chaosState.latencyJitter?.minLatency || 100}ms`;
+      document.getElementById('inputMaxLatency').value = chaosState.latencyJitter?.maxLatency || 2500;
+      document.getElementById('valMaxLatency').textContent = `${chaosState.latencyJitter?.maxLatency || 2500}ms`;
+
+      // Error Spikes
+      document.getElementById('chaosErrorEnabled').checked = !!chaosState.errorSpikes?.enabled;
+      document.getElementById('inputErrorRate').value = Math.round((chaosState.errorSpikes?.errorRate || 0.25) * 100);
+      document.getElementById('valErrorRate').textContent = `${Math.round((chaosState.errorSpikes?.errorRate || 0.25) * 100)}%`;
+      const codes = chaosState.errorSpikes?.errorCodes || [500, 502, 503, 504];
+      document.getElementById('err500').checked = codes.includes(500);
+      document.getElementById('err502').checked = codes.includes(502);
+      document.getElementById('err503').checked = codes.includes(503);
+      document.getElementById('err504').checked = codes.includes(504);
+      document.getElementById('customErrorPayload').value = chaosState.errorSpikes?.customPayload || '';
+
+      // Malformed JSON
+      document.getElementById('chaosMalformedEnabled').checked = !!chaosState.malformedJson?.enabled;
+      document.getElementById('inputMalformedRate').value = Math.round((chaosState.malformedJson?.malformedRate || 0.15) * 100);
+      document.getElementById('valMalformedRate').textContent = `${Math.round((chaosState.malformedJson?.malformedRate || 0.15) * 100)}%`;
+      document.getElementById('malformedMode').value = chaosState.malformedJson?.mode || 'truncated';
+
+      // Rate Limiting
+      document.getElementById('chaosRateLimitEnabled').checked = !!chaosState.rateLimiting?.enabled;
+      document.getElementById('inputMaxRequests').value = chaosState.rateLimiting?.maxRequests || 5;
+      document.getElementById('valMaxRequests').textContent = `${chaosState.rateLimiting?.maxRequests || 5} reqs`;
+      document.getElementById('inputWindowSec').value = chaosState.rateLimiting?.windowSec || 10;
+      document.getElementById('valWindowSec').textContent = `${chaosState.rateLimiting?.windowSec || 10} sec`;
+
+      // Bandwidth Throttle
+      document.getElementById('chaosThrottleEnabled').checked = !!chaosState.bandwidthThrottle?.enabled;
+      document.getElementById('inputThrottleKbps').value = chaosState.bandwidthThrottle?.kbps || 64;
+      document.getElementById('valThrottleKbps').textContent = `${chaosState.bandwidthThrottle?.kbps || 64} kbps`;
+
+      highlightActiveCards();
+    }
+
+    function highlightActiveCards() {
+      document.getElementById('cardLatency')?.classList.toggle('active', document.getElementById('chaosLatencyEnabled')?.checked);
+      document.getElementById('cardError')?.classList.toggle('active', document.getElementById('chaosErrorEnabled')?.checked);
+      document.getElementById('cardMalformed')?.classList.toggle('active', document.getElementById('chaosMalformedEnabled')?.checked);
+      document.getElementById('cardRateLimit')?.classList.toggle('active', document.getElementById('chaosRateLimitEnabled')?.checked);
+      document.getElementById('cardThrottle')?.classList.toggle('active', document.getElementById('chaosThrottleEnabled')?.checked);
+    }
+
+    // Sliders Live Update Binding
+    function bindSlider(sliderId, valueId, suffix = '') {
+      const slider = document.getElementById(sliderId);
+      const val = document.getElementById(valueId);
+      if (slider && val) {
+        slider.addEventListener('input', () => {
+          val.textContent = `${slider.value}${suffix}`;
+        });
+      }
+    }
+
+    bindSlider('inputJitterRate', 'valJitterRate', '%');
+    bindSlider('inputMinLatency', 'valMinLatency', 'ms');
+    bindSlider('inputMaxLatency', 'valMaxLatency', 'ms');
+    bindSlider('inputErrorRate', 'valErrorRate', '%');
+    bindSlider('inputMalformedRate', 'valMalformedRate', '%');
+    bindSlider('inputMaxRequests', 'valMaxRequests', ' reqs');
+    bindSlider('inputWindowSec', 'valWindowSec', ' sec');
+    bindSlider('inputThrottleKbps', 'valThrottleKbps', ' kbps');
+
+    document.querySelectorAll('.chaos-card input[type="checkbox"]').forEach(ch => {
+      ch.addEventListener('change', highlightActiveCards);
+    });
+
+    async function saveChaosConfiguration() {
+      const errorCodes = [];
+      if (document.getElementById('err500').checked) errorCodes.push(500);
+      if (document.getElementById('err502').checked) errorCodes.push(502);
+      if (document.getElementById('err503').checked) errorCodes.push(503);
+      if (document.getElementById('err504').checked) errorCodes.push(504);
+
+      const payload = {
+        globalEnabled: true, // Auto-arm master switch when saving configured chaos
+        latencyJitter: {
+          enabled: document.getElementById('chaosLatencyEnabled').checked,
+          jitterRate: parseInt(document.getElementById('inputJitterRate').value, 10) / 100,
+          minLatency: parseInt(document.getElementById('inputMinLatency').value, 10),
+          maxLatency: parseInt(document.getElementById('inputMaxLatency').value, 10)
+        },
+        errorSpikes: {
+          enabled: document.getElementById('chaosErrorEnabled').checked,
+          errorRate: parseInt(document.getElementById('inputErrorRate').value, 10) / 100,
+          errorCodes: errorCodes.length > 0 ? errorCodes : [500],
+          customPayload: document.getElementById('customErrorPayload').value
+        },
+        malformedJson: {
+          enabled: document.getElementById('chaosMalformedEnabled').checked,
+          malformedRate: parseInt(document.getElementById('inputMalformedRate').value, 10) / 100,
+          mode: document.getElementById('malformedMode').value
+        },
+        rateLimiting: {
+          enabled: document.getElementById('chaosRateLimitEnabled').checked,
+          maxRequests: parseInt(document.getElementById('inputMaxRequests').value, 10),
+          windowSec: parseInt(document.getElementById('inputWindowSec').value, 10)
+        },
+        bandwidthThrottle: {
+          enabled: document.getElementById('chaosThrottleEnabled').checked,
+          kbps: parseInt(document.getElementById('inputThrottleKbps').value, 10)
+        }
+      };
+
+      try {
+        const res = await fetch('/api/chaos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          chaosState = data.data;
+          ForgeApp.showToast('Chaos Matrix Applied & Master Armed!', 'error');
+          renderChaosUI();
+        }
+      } catch (err) {
+        ForgeApp.showToast('Failed to save chaos matrix', 'error');
+      }
+    }
+
+    async function disarmAllChaos() {
+      try {
+        const res = await fetch('/api/chaos/reset', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          chaosState = data.data;
+          renderChaosUI();
+          ForgeApp.showToast('All Chaos Disarmed: Sandbox is Safe', 'success');
+        }
+      } catch (err) {
+        ForgeApp.showToast('Disarm failed', 'error');
+      }
+    }
+
+    function applyPreset(type) {
+      if (!chaosState) return;
+
+      if (type === 'safe') {
+        disarmAllChaos();
+        return;
+      }
+
+      // Default all to false first
+      document.getElementById('chaosLatencyEnabled').checked = false;
+      document.getElementById('chaosErrorEnabled').checked = false;
+      document.getElementById('chaosMalformedEnabled').checked = false;
+      document.getElementById('chaosRateLimitEnabled').checked = false;
+      document.getElementById('chaosThrottleEnabled').checked = false;
+
+      if (type === 'flaky3g') {
+        document.getElementById('chaosLatencyEnabled').checked = true;
+        document.getElementById('inputJitterRate').value = 75;
+        document.getElementById('valJitterRate').textContent = '75%';
+        document.getElementById('inputMinLatency').value = 400;
+        document.getElementById('valMinLatency').textContent = '400ms';
+        document.getElementById('inputMaxLatency').value = 3500;
+        document.getElementById('valMaxLatency').textContent = '3500ms';
+        document.getElementById('chaosThrottleEnabled').checked = true;
+        document.getElementById('inputThrottleKbps').value = 64;
+        document.getElementById('valThrottleKbps').textContent = '64 kbps';
+      } else if (type === 'outage') {
+        document.getElementById('chaosErrorEnabled').checked = true;
+        document.getElementById('inputErrorRate').value = 40;
+        document.getElementById('valErrorRate').textContent = '40%';
+        document.getElementById('err500').checked = false;
+        document.getElementById('err502').checked = true;
+        document.getElementById('err503').checked = true;
+        document.getElementById('err504').checked = true;
+      } else if (type === 'ddos') {
+        document.getElementById('chaosRateLimitEnabled').checked = true;
+        document.getElementById('inputMaxRequests').value = 3;
+        document.getElementById('valMaxRequests').textContent = '3 reqs';
+        document.getElementById('inputWindowSec').value = 10;
+        document.getElementById('valWindowSec').textContent = '10 sec';
+      } else if (type === 'storm') {
+        document.getElementById('chaosLatencyEnabled').checked = true;
+        document.getElementById('chaosErrorEnabled').checked = true;
+        document.getElementById('chaosMalformedEnabled').checked = true;
+        document.getElementById('chaosRateLimitEnabled').checked = true;
+        document.getElementById('inputJitterRate').value = 60;
+        document.getElementById('valJitterRate').textContent = '60%';
+        document.getElementById('inputErrorRate').value = 30;
+        document.getElementById('valErrorRate').textContent = '30%';
+        document.getElementById('inputMalformedRate').value = 25;
+        document.getElementById('valMalformedRate').textContent = '25%';
+      }
+
+      highlightActiveCards();
+      saveChaosConfiguration();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadChaosConfig);
+  </script>
+</body>
+</html>

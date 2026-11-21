@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PolyglotForge - API Simulator & Chaos Workbench</title>
+  <link rel="stylesheet" href="/css/forge.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo-group">
+        <div class="logo-badge">⚡</div>
+        <div class="logo-text">Polyglot<span>Forge</span></div>
+      </a>
+
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle Navigation">☰</button>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/" class="nav-link active">Dashboard</a></li>
+        <li><a href="/endpoints" class="nav-link">Endpoint Designer</a></li>
+        <li><a href="/chaos" class="nav-link">Chaos Matrix</a></li>
+        <li><a href="/traffic" class="nav-link">Traffic Inspector</a></li>
+      </ul>
+
+      <div class="nav-status-group">
+        <div class="live-indicator" id="liveIndicator">
+          <span class="live-dot"></span>
+          <span id="liveText">LIVE FEED</span>
+        </div>
+
+        <div class="chaos-master-toggle" id="masterChaosToggle" title="Toggle Global Chaos Fault Injection">
+          <span class="dot"></span>
+          <span class="text">CHAOS: SAFE</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">API Simulator &amp; <span class="accent">Chaos Workbench</span></h1>
+        <p class="page-subtitle">Production-grade dynamic API mocking, template evaluation, and live fault injection</p>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="/endpoints" class="btn btn-secondary">
+          <span>⚙️</span> Manage Routes
+        </a>
+        <a href="/chaos" class="btn btn-primary">
+          <span>⚡</span> Configure Chaos
+        </a>
+      </div>
+    </header>
+
+    <!-- Metrics Row -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Active Endpoints</div>
+        <div class="metric-value" id="activeEndpointsVal">--</div>
+        <div class="metric-trend">Dynamic Mock Rules Registered</div>
+      </div>
+      <div class="metric-card success">
+        <div class="metric-label">Total Simulated Calls</div>
+        <div class="metric-value" id="totalRequestsVal">--</div>
+        <div class="metric-trend">Live Traffic Buffer Captures</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="metric-label">Average Latency</div>
+        <div class="metric-value" id="avgLatencyVal">--</div>
+        <div class="metric-trend">Including Simulated Jitter</div>
+      </div>
+      <div class="metric-card alert">
+        <div class="metric-label">Fault / Error Rate</div>
+        <div class="metric-value" id="errorRateVal">--</div>
+        <div class="metric-trend">HTTP 50x &amp; 429 Injections</div>
+      </div>
+    </section>
+
+    <!-- Two Column Dashboard Grid -->
+    <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 1.5rem; margin-bottom: 2rem;">
+      <!-- Interactive API Playground -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <span>🎮</span> Live API Workbench Playground
+          </h2>
+          <span style="font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono);">
+            Direct Sandbox Probe
+          </span>
+        </div>
+        <div class="card-body">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Dispatch real test requests into the PolyglotForge simulator engine to test dynamic templating, params, and chaos fault responses in real-time.
+          </p>
+
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <select id="pgMethod" class="form-control" style="width: 110px; font-family: var(--font-mono); font-weight: bold;">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="DELETE">DELETE</option>
+            </select>
+            <input type="text" id="pgPath" class="form-control" value="/mock/v1/users" placeholder="/mock/v1/..." style="font-family: var(--font-mono);">
+            <button class="btn btn-primary" onclick="ForgeApp.sendPlaygroundRequest()">
+              ⚡ Send
+            </button>
+          </div>
+
+          <!-- Quick Presets -->
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            <span style="font-size: 0.75rem; color: var(--text-dim); align-self: center;">Quick Probe:</span>
+            <button class="btn btn-secondary btn-sm" onclick="setPlayground('/mock/v1/users', 'GET')">/v1/users</button>
+            <button class="btn btn-secondary btn-sm" onclick="setPlayground('/mock/v1/users/usr_8821', 'GET')">/v1/users/:id</button>
+            <button class="btn btn-secondary btn-sm" onclick="setPlayground('/mock/v1/auth/login', 'POST', '{\n  &quot;username&quot;: &quot;dev_lead&quot;,\n  &quot;password&quot;: &quot;secret123&quot;\n}')">/v1/auth/login</button>
+            <button class="btn btn-secondary btn-sm" onclick="setPlayground('/mock/v1/orders', 'POST', '{\n  &quot;cartId&quot;: &quot;cart_991&quot;,\n  &quot;items&quot;: [1, 2]\n}')">/v1/orders</button>
+            <button class="btn btn-secondary btn-sm" onclick="setPlayground('/mock/v1/health', 'GET')">/v1/health</button>
+          </div>
+
+          <!-- Optional Payload Box -->
+          <div id="pgBodyGroup" style="margin-bottom: 1rem; display: none;">
+            <label class="form-label">Request Body (JSON)</label>
+            <textarea id="pgBody" class="form-control" rows="3" placeholder='{"key": "value"}'></textarea>
+          </div>
+
+          <!-- Output Inspector Box -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="form-label" style="margin: 0;">Simulator Response</span>
+                <span id="pgStatus" class="badge-status status-2xx" style="font-size: 0.75rem;">READY</span>
+              </div>
+              <div style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-dim); display: flex; gap: 0.75rem;">
+                <span>Latency: <b id="pgTime" style="color: var(--neon-cyan);">--</b></span>
+                <span>Chaos: <b id="pgChaos">NONE</b></span>
+              </div>
+            </div>
+            <div class="code-box" style="max-height: 280px; overflow-y: auto;">
+              <pre><code id="pgOutput">// Click 'Send' or choose a quick probe to inspect response...</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Live Mini Traffic Stream -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <span>📡</span> Live Traffic Ticker
+          </h2>
+          <a href="/traffic" class="btn btn-secondary btn-sm">Full Inspector ➜</a>
+        </div>
+        <div class="card-body" style="padding: 0.75rem 1rem;">
+          <div id="miniTrafficTicker" style="display: flex; flex-direction: column; gap: 0.4rem; min-height: 380px;">
+            <div style="padding: 2.5rem 1rem; text-align: center; color: var(--text-dim); font-size: 0.85rem;">
+              Listening for incoming requests...
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Active Endpoints Table -->
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <span>⚡</span> Active Mock Endpoints
+        </h2>
+        <a href="/endpoints" class="btn btn-primary btn-sm">+ New Endpoint</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Endpoint Route</th>
+              <th>Name &amp; Description</th>
+              <th>Status</th>
+              <th>Delay</th>
+              <th>Tags</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="endpointsTableBody">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading endpoints...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Notification Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/js/forge-app.js"></script>
+  <script>
+    function setPlayground(path, method, body = '') {
+      document.getElementById('pgPath').value = path;
+      const methodSelect = document.getElementById('pgMethod');
+      methodSelect.value = method;
+
+      const bodyGroup = document.getElementById('pgBodyGroup');
+      const bodyEl = document.getElementById('pgBody');
+      if (['POST', 'PUT', 'PATCH'].includes(method)) {
+        bodyGroup.style.display = 'block';
+        bodyEl.value = body;
+      } else {
+        bodyGroup.style.display = 'none';
+        bodyEl.value = '';
+      }
+
+      ForgeApp.sendPlaygroundRequest();
+    }
+
+    document.getElementById('pgMethod')?.addEventListener('change', (e) => {
+      const isBodyMethod = ['POST', 'PUT', 'PATCH'].includes(e.target.value);
+      document.getElementById('pgBodyGroup').style.display = isBodyMethod ? 'block' : 'none';
+    });
+
+    // Populate active endpoints table on dashboard
+    async function loadDashboardEndpoints() {
+      try {
+        const res = await fetch('/api/endpoints');
+        const data = await res.json();
+        const tbody = document.getElementById('endpointsTableBody');
+        if (!tbody || !data.success) return;
+
+        if (data.data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem;">No endpoints registered.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.data.map(ep => {
+          const methodClass = `badge-${ep.method.toLowerCase()}`;
+          return `
+            <tr>
+              <td><span class="badge-method ${methodClass}">${ep.method}</span></td>
+              <td>
+                <a href="/mock${ep.path}" target="_blank" style="color:var(--neon-cyan); font-family:var(--font-mono); text-decoration:none;">
+                  /mock${ep.path}
+                </a>
+              </td>
+              <td>
+                <div style="font-weight:600; color:#fff;">${ep.name}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${ep.description || ''}</div>
+              </td>
+              <td><span class="badge-status status-${Math.floor(ep.statusCode/100)}xx">${ep.statusCode}</span></td>
+              <td style="font-family:var(--font-mono); color:var(--text-muted);">${ep.delayMs}ms</td>
+              <td>
+                ${(ep.tags || []).map(t => `<span style="font-size:0.7rem; background:rgba(255,255,255,0.06); padding:0.15rem 0.4rem; border-radius:4px; margin-right:4px;">${t}</span>`).join('')}
+              </td>
+              <td>
+                <button class="btn btn-secondary btn-sm" onclick="setPlayground('/mock${ep.path}', '${ep.method}')">Probe</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load dashboard endpoints:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDashboardEndpoints);
+  </script>
+</body>
+</html>

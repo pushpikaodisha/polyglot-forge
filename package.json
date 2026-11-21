@@ -1,0 +1,26 @@
+{
+  "name": "polyglot-forge",
+  "version": "1.0.0",
+  "description": "PolyglotForge API Simulator & Chaos Workbench - Node.js 22 Full-Stack Platform for API Mocking & Fault Injection",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "api-mocking",
+    "chaos-engineering",
+    "fault-injection",
+    "api-simulator",
+    "traffic-inspector",
+    "waterfall",
+    "polyglot",
+    "nodejs-22"
+  ],
+  "author": "PolyglotForge Architect",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

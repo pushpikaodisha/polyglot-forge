@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Traffic Inspector - PolyglotForge</title>
+  <link rel="stylesheet" href="/css/forge.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo-group">
+        <div class="logo-badge">⚡</div>
+        <div class="logo-text">Polyglot<span>Forge</span></div>
+      </a>
+
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle Navigation">☰</button>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/" class="nav-link">Dashboard</a></li>
+        <li><a href="/endpoints" class="nav-link">Endpoint Designer</a></li>
+        <li><a href="/chaos" class="nav-link">Chaos Matrix</a></li>
+        <li><a href="/traffic" class="nav-link active">Traffic Inspector</a></li>
+      </ul>
+
+      <div class="nav-status-group">
+        <div class="live-indicator" id="liveIndicator">
+          <span class="live-dot"></span>
+          <span id="liveText">LIVE FEED</span>
+        </div>
+
+        <div class="chaos-master-toggle" id="masterChaosToggle" title="Toggle Global Chaos Fault Injection">
+          <span class="dot"></span>
+          <span class="text">CHAOS: SAFE</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content" style="max-width: 1600px;">
+    <header class="page-header" style="margin-bottom: 1.25rem;">
+      <div>
+        <h1 class="page-title">Real-Time <span class="accent">Traffic Waterfall</span></h1>
+        <p class="page-subtitle">Inspect live HTTP payloads, header exchanges, timing breakdowns, and injected chaos faults</p>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary" id="pauseStreamBtn">
+          ⏸ Pause Feed
+        </button>
+        <button class="btn btn-secondary" id="exportTrafficBtn">
+          📥 Export JSON
+        </button>
+        <button class="btn btn-danger" id="clearTrafficBtn">
+          🗑️ Clear History
+        </button>
+      </div>
+    </header>
+
+    <!-- Filter Control Bar -->
+    <div class="card p-3" style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+      <div style="display: flex; gap: 0.75rem; flex: 1; min-width: 280px; align-items: center; flex-wrap: wrap;">
+        <input type="text" id="trafficSearch" class="form-control" placeholder="Filter by URL path or mock rule..." style="max-width: 320px;">
+
+        <select id="methodFilter" class="form-control" style="width: 120px;">
+          <option value="">Methods (All)</option>
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="DELETE">DELETE</option>
+          <option value="PATCH">PATCH</option>
+        </select>
+
+        <select id="statusFilter" class="form-control" style="width: 130px;">
+          <option value="">Status (All)</option>
+          <option value="2xx">2xx Success</option>
+          <option value="4xx">4xx Client Err</option>
+          <option value="5xx">5xx Server Err</option>
+        </select>
+
+        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--neon-red); font-weight: 600; cursor: pointer; user-select: none;">
+          <input type="checkbox" id="chaosOnlyCheck">
+          ⚡ Injected Faults Only
+        </label>
+      </div>
+
+      <div id="trafficCount" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-dim);">
+        0 entries
+      </div>
+    </div>
+
+    <!-- Waterfall Two-Pane Inspector -->
+    <div class="traffic-layout">
+      <!-- Left Pane: Request Waterfall List -->
+      <div class="traffic-list-pane">
+        <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.2); display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-family: var(--font-mono);">
+          <span>Method / Path</span>
+          <span>Latency Waterfall</span>
+        </div>
+        <div id="trafficList" style="overflow-y: auto; flex: 1;">
+          <!-- Rows inserted dynamically -->
+        </div>
+      </div>
+
+      <!-- Right Pane: Inspector Details -->
+      <div class="traffic-detail-pane" id="trafficDetail">
+        <div style="padding: 4rem 2rem; text-align: center; color: var(--text-dim);">
+          <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🔍</div>
+          <div style="font-size: 1.1rem; color: var(--text-muted); font-weight: 600;">Request Inspector</div>
+          <div>Select an incoming request from the waterfall to inspect headers, timing breakdown, and payloads.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/js/forge-app.js"></script>
+  <script src="/js/traffic-viewer.js"></script>
+</body>
+</html>

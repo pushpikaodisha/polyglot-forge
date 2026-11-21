@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Endpoint Designer - PolyglotForge</title>
+  <link rel="stylesheet" href="/css/forge.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo-group">
+        <div class="logo-badge">⚡</div>
+        <div class="logo-text">Polyglot<span>Forge</span></div>
+      </a>
+
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle Navigation">☰</button>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/" class="nav-link">Dashboard</a></li>
+        <li><a href="/endpoints" class="nav-link active">Endpoint Designer</a></li>
+        <li><a href="/chaos" class="nav-link">Chaos Matrix</a></li>
+        <li><a href="/traffic" class="nav-link">Traffic Inspector</a></li>
+      </ul>
+
+      <div class="nav-status-group">
+        <div class="live-indicator" id="liveIndicator">
+          <span class="live-dot"></span>
+          <span id="liveText">LIVE FEED</span>
+        </div>
+
+        <div class="chaos-master-toggle" id="masterChaosToggle" title="Toggle Global Chaos Fault Injection">
+          <span class="dot"></span>
+          <span class="text">CHAOS: SAFE</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">Dynamic <span class="accent">Endpoint Designer</span></h1>
+        <p class="page-subtitle">Define URL schemas, parameterized paths, and dynamic templated payloads</p>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary" onclick="resetToFactoryDefaults()">
+          <span>↺</span> Reset Defaults
+        </button>
+        <button class="btn btn-primary" onclick="openEndpointModal()">
+          <span>+</span> Create Mock Route
+        </button>
+      </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="card p-4" style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; gap: 0.75rem; flex: 1; min-width: 260px;">
+        <input type="text" id="epSearch" class="form-control" placeholder="Search routes by path, name, or tag..." style="max-width: 400px;">
+        <select id="epMethodFilter" class="form-control" style="width: 140px;">
+          <option value="">All Methods</option>
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="DELETE">DELETE</option>
+          <option value="PATCH">PATCH</option>
+        </select>
+      </div>
+      <div id="epCountBadge" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-dim);">
+        Loading endpoints...
+      </div>
+    </div>
+
+    <!-- Endpoints Grid -->
+    <div id="endpointsContainer" style="display: flex; flex-direction: column; gap: 1rem;">
+      <!-- Populated dynamically via JS -->
+    </div>
+  </main>
+
+  <!-- Endpoint Designer Modal -->
+  <div class="modal-backdrop" id="endpointModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 class="card-title" id="modalTitle">Create Mock Endpoint</h2>
+        <button class="btn btn-secondary btn-sm" onclick="closeEndpointModal()" style="min-height: 32px; min-width: 32px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="endpointForm">
+          <input type="hidden" id="epId">
+
+          <div style="display: grid; grid-template-columns: 140px 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <label class="form-label">HTTP Method</label>
+              <select id="epMethod" class="form-control font-mono font-bold">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+                <option value="PATCH">PATCH</option>
+                <option value="*">ALL (*)</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Mock Path (e.g. /v1/users or /v1/users/:id)</label>
+              <div style="display: flex; align-items: center;">
+                <span style="background: var(--bg-card-hover); border: 1px solid var(--border-color); border-right: none; padding: 0.65rem 0.75rem; border-radius: var(--radius-md) 0 0 var(--radius-md); font-family: var(--font-mono); font-size: 0.85rem; color: var(--neon-cyan);">
+                  /mock
+                </span>
+                <input type="text" id="epPath" class="form-control" placeholder="/v1/my-resource" required style="border-radius: 0 var(--radius-md) var(--radius-md) 0; font-family: var(--font-mono);">
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <label class="form-label">Endpoint Name</label>
+              <input type="text" id="epName" class="form-control" placeholder="Descriptive Name" required>
+            </div>
+            <div>
+              <label class="form-label">Tags (comma-separated)</label>
+              <input type="text" id="epTags" class="form-control" placeholder="auth, users, billing">
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.25rem;">
+            <label class="form-label">Description</label>
+            <input type="text" id="epDesc" class="form-control" placeholder="Short description of this simulated API">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 160px 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <label class="form-label">Status Code</label>
+              <select id="epStatusCode" class="form-control font-mono">
+                <option value="200">200 OK</option>
+                <option value="201">201 Created</option>
+                <option value="204">204 No Content</option>
+                <option value="400">400 Bad Request</option>
+                <option value="401">401 Unauthorized</option>
+                <option value="403">403 Forbidden</option>
+                <option value="404">404 Not Found</option>
+                <option value="422">422 Unprocessable</option>
+                <option value="500">500 Server Error</option>
+                <option value="503">503 Unavailable</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Baseline Delay (ms)</label>
+              <input type="number" id="epDelayMs" class="form-control" min="0" max="10000" step="25" value="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Custom Response Headers (JSON)</label>
+            <textarea id="epHeaders" class="form-control" rows="2" style="font-family: var(--font-mono); font-size: 0.8rem;">{"Content-Type": "application/json"}</textarea>
+          </div>
+
+          <!-- Dynamic Template Macro Bar -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label class="form-label" style="margin: 0;">Response Body &amp; Faker Macro Generator</label>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="formatModalJson()" style="min-height: 28px; padding: 0.2rem 0.6rem; font-size: 0.75rem;">
+                Format JSON
+              </button>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.5rem; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <span style="font-size: 0.7rem; color: var(--text-dim); align-self: center; margin-right: 0.25rem;">Insert:</span>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 26px; padding: 0.15rem 0.45rem; font-size: 0.75rem;" onclick="ForgeApp.insertMacro('{{uuid}}')">+ UUID</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 26px; padding: 0.15rem 0.45rem; font-size: 0.75rem;" onclick="ForgeApp.insertMacro('{{name}}')">+ Name</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 26px; padding: 0.15rem 0.45rem; font-size: 0.75rem;" onclick="ForgeApp.insertMacro('{{email}}')">+ Email</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 26px; padding: 0.15rem 0.45rem; font-size: 0.75rem;" onclick="ForgeApp.insertMacro('{{timestamp}}')">+ Timestamp</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 26px; padding: 0.15rem 0.45rem; font-size: 0.75rem;" onclick="ForgeApp.insertMacro('{{company}}')">+ Company</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 26px; padding: 0.15rem 0.45rem; font-size: 0.75rem;" onclick="ForgeApp.insertMacro('{{status}}')">+ Status</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 26px; padding: 0.15rem 0.45rem; font-size: 0.75rem;" onclick="ForgeApp.insertMacro('{{req.params.id}}')">+ Param :id</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 26px; padding: 0.15rem 0.45rem; font-size: 0.75rem;" onclick="ForgeApp.insertMacro('{{randomInt(10, 999)}}')">+ RandomInt</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="min-height: 26px; padding: 0.15rem 0.45rem; font-size: 0.75rem;" onclick="ForgeApp.insertMacro('{{#repeat 3}}\n  {\n    &quot;id&quot;: &quot;{{uuid}}&quot;,\n    &quot;name&quot;: &quot;{{name}}&quot;\n  }\n  {{/repeat}}')">+ Repeat Array</button>
+            </div>
+
+            <textarea id="endpointBody" class="form-control" rows="10" placeholder='{\n  "status": "success",\n  "id": "{{uuid}}"\n}' required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeEndpointModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveEndpoint()">Save Endpoint</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/js/forge-app.js"></script>
+  <script>
+    let endpointsList = [];
+
+    async function loadEndpoints() {
+      try {
+        const res = await fetch('/api/endpoints');
+        const data = await res.json();
+        if (data.success) {
+          endpointsList = data.data;
+          renderEndpoints();
+        }
+      } catch (err) {
+        ForgeApp.showToast('Failed to load endpoints', 'error');
+      }
+    }
+
+    function renderEndpoints() {
+      const container = document.getElementById('endpointsContainer');
+      const search = document.getElementById('epSearch')?.value.toLowerCase().trim() || '';
+      const methodFilter = document.getElementById('epMethodFilter')?.value || '';
+      const countBadge = document.getElementById('epCountBadge');
+
+      const filtered = endpointsList.filter(ep => {
+        if (methodFilter && ep.method !== methodFilter && ep.method !== '*') return false;
+        if (search) {
+          const matchPath = ep.path?.toLowerCase().includes(search);
+          const matchName = ep.name?.toLowerCase().includes(search);
+          const matchTags = (ep.tags || []).some(t => t.toLowerCase().includes(search));
+          if (!matchPath && !matchName && !matchTags) return false;
+        }
+        return true;
+      });
+
+      if (countBadge) countBadge.textContent = `${filtered.length} of ${endpointsList.length} endpoints active`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="card p-8 text-center" style="color: var(--text-dim);">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚡</div>
+            <div style="font-size: 1.1rem; color: #fff;">No mock endpoints found</div>
+            <p>Click "Create Mock Route" above to build a new dynamic API simulator endpoint.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(ep => {
+        const methodClass = `badge-${ep.method.toLowerCase()}`;
+        const statusClass = `status-${Math.floor(ep.statusCode / 100)}xx`;
+        return `
+          <div class="card" style="margin-bottom: 1rem; border-left: 4px solid ${ep.enabled ? 'var(--neon-cyan)' : 'var(--border-color)'}; opacity: ${ep.enabled ? '1' : '0.65'};">
+            <div style="padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+              <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 280px;">
+                <span class="badge-method ${methodClass}">${ep.method}</span>
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <a href="/mock${ep.path}" target="_blank" style="font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; color: #fff; text-decoration: none;">
+                      /mock${ep.path}
+                    </a>
+                    <span class="badge-status ${statusClass}">${ep.statusCode}</span>
+                    ${ep.delayMs > 0 ? `<span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--neon-amber);">⏳ ${ep.delayMs}ms</span>` : ''}
+                  </div>
+                  <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+                    <b>${ep.name}</b> ${ep.description ? `• ${ep.description}` : ''}
+                  </div>
+                  <div style="margin-top: 0.4rem; display: flex; gap: 0.35rem;">
+                    ${(ep.tags || []).map(t => `<span style="font-size: 0.7rem; background: rgba(0, 240, 255, 0.1); color: var(--neon-cyan); border: 1px solid rgba(0, 240, 255, 0.2); padding: 0.1rem 0.4rem; border-radius: 4px;">#${t}</span>`).join('')}
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label class="switch" title="Toggle Endpoint Active/Disabled">
+                  <input type="checkbox" ${ep.enabled ? 'checked' : ''} onchange="toggleEndpoint('${ep.id}')">
+                  <span class="slider-round"></span>
+                </label>
+                <button class="btn btn-secondary btn-sm" onclick="copyMockUrl('/mock${ep.path}')" title="Copy URL">
+                  🔗 Copy URL
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="editEndpoint('${ep.id}')">
+                  ✏️ Edit
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteEndpoint('${ep.id}')">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openEndpointModal(ep = null) {
+      const modal = document.getElementById('endpointModal');
+      const title = document.getElementById('modalTitle');
+      document.getElementById('endpointForm').reset();
+
+      if (ep) {
+        title.textContent = 'Edit Mock Endpoint';
+        document.getElementById('epId').value = ep.id;
+        document.getElementById('epMethod').value = ep.method;
+        document.getElementById('epPath').value = ep.path.replace(/^\/mock/, '');
+        document.getElementById('epName').value = ep.name;
+        document.getElementById('epDesc').value = ep.description || '';
+        document.getElementById('epTags').value = (ep.tags || []).join(', ');
+        document.getElementById('epStatusCode').value = ep.statusCode;
+        document.getElementById('epDelayMs').value = ep.delayMs || 0;
+        document.getElementById('epHeaders').value = JSON.stringify(ep.headers || {}, null, 2);
+        document.getElementById('endpointBody').value = ep.body || '';
+      } else {
+        title.textContent = 'Create Mock Endpoint';
+        document.getElementById('epId').value = '';
+        document.getElementById('epMethod').value = 'GET';
+        document.getElementById('epPath').value = '/v1/resource';
+        document.getElementById('epName').value = 'New Resource API';
+        document.getElementById('epStatusCode').value = '200';
+        document.getElementById('epDelayMs').value = '0';
+        document.getElementById('epHeaders').value = '{\n  "Content-Type": "application/json"\n}';
+        document.getElementById('endpointBody').value = '{\n  "status": "success",\n  "id": "{{uuid}}",\n  "timestamp": "{{timestamp}}"\n}';
+      }
+
+      modal.classList.add('active');
+    }
+
+    function closeEndpointModal() {
+      document.getElementById('endpointModal').classList.remove('active');
+    }
+
+    function editEndpoint(id) {
+      const ep = endpointsList.find(e => e.id === id);
+      if (ep) openEndpointModal(ep);
+    }
+
+    async function saveEndpoint() {
+      const id = document.getElementById('epId').value;
+      const method = document.getElementById('epMethod').value;
+      let pathVal = document.getElementById('epPath').value.trim();
+      if (!pathVal.startsWith('/')) pathVal = '/' + pathVal;
+
+      const name = document.getElementById('epName').value.trim();
+      const description = document.getElementById('epDesc').value.trim();
+      const tagsStr = document.getElementById('epTags').value.trim();
+      const statusCode = parseInt(document.getElementById('epStatusCode').value, 10);
+      const delayMs = parseInt(document.getElementById('epDelayMs').value, 10) || 0;
+      const body = document.getElementById('endpointBody').value;
+
+      let headers = {};
+      try {
+        headers = JSON.parse(document.getElementById('epHeaders').value);
+      } catch (e) {
+        ForgeApp.showToast('Invalid JSON in Response Headers', 'error');
+        return;
+      }
+
+      const payload = {
+        method,
+        path: pathVal,
+        name: name || 'Untitled Endpoint',
+        description,
+        tags: tagsStr ? tagsStr.split(',').map(s => s.trim()) : [],
+        statusCode,
+        delayMs,
+        headers,
+        body
+      };
+
+      try {
+        const url = id ? `/api/endpoints/${id}` : '/api/endpoints';
+        const httpMethod = id ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+          method: httpMethod,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          ForgeApp.showToast(id ? 'Endpoint updated!' : 'Endpoint created!', 'success');
+          closeEndpointModal();
+          loadEndpoints();
+        } else {
+          ForgeApp.showToast(`Error: ${data.error}`, 'error');
+        }
+      } catch (err) {
+        ForgeApp.showToast('Failed to save endpoint', 'error');
+      }
+    }
+
+    async function toggleEndpoint(id) {
+      try {
+        const res = await fetch(`/api/endpoints/${id}/toggle`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          ForgeApp.showToast(`Endpoint ${data.data.enabled ? 'Enabled' : 'Disabled'}`, 'info');
+          loadEndpoints();
+        }
+      } catch (err) {
+        ForgeApp.showToast('Toggle failed', 'error');
+      }
+    }
+
+    async function deleteEndpoint(id) {
+      if (!confirm('Are you sure you want to permanently delete this mock endpoint?')) return;
+      try {
+        const res = await fetch(`/api/endpoints/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          ForgeApp.showToast('Endpoint removed', 'success');
+          loadEndpoints();
+        }
+      } catch (err) {
+        ForgeApp.showToast('Delete failed', 'error');
+      }
+    }
+
+    async function resetToFactoryDefaults() {
+      if (!confirm('Reset all mock endpoints and chaos configs to factory defaults?')) return;
+      try {
+        const res = await fetch('/api/reset-defaults', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          ForgeApp.showToast('Reset to factory defaults completed', 'success');
+          loadEndpoints();
+        }
+      } catch (err) {
+        ForgeApp.showToast('Reset failed', 'error');
+      }
+    }
+
+    function formatModalJson() {
+      const textarea = document.getElementById('endpointBody');
+      try {
+        const parsed = JSON.parse(textarea.value);
+        textarea.value = JSON.stringify(parsed, null, 2);
+      } catch (e) {
+        ForgeApp.showToast('Note: Body contains dynamic macro templates, preserved as-is', 'info');
+      }
+    }
+
+    function copyMockUrl(path) {
+      const fullUrl = window.location.origin + path;
+      navigator.clipboard.writeText(fullUrl).then(() => {
+        ForgeApp.showToast('Mock URL copied to clipboard!', 'success');
+      }).catch(() => {
+        prompt('Copy Mock URL:', fullUrl);
+      });
+    }
+
+    document.getElementById('epSearch')?.addEventListener('input', renderEndpoints);
+    document.getElementById('epMethodFilter')?.addEventListener('change', renderEndpoints);
+    document.addEventListener('DOMContentLoaded', loadEndpoints);
+  </script>
+</body>
+</html>
